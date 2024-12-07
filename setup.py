@@ -47,7 +47,7 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     packages=find_packages(exclude=("tests",)),
-    package_data={"regression_model": ["VERSION"]},
+    package_data={"deep_learning_model": ["VERSION"]},
     install_requires=list_reqs(),
     extras_require={},
     include_package_data=True,

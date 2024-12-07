@@ -123,6 +123,26 @@ test_size: 0.20
 # Set the random seed
 random_state: 42
 
+# Set the batch size
+batch_size=128
+
+color_mode='rgb'
+class_mode='categorical'
+size=224
+target_size=(size,size)
+input_shape = (224, 224, 3)
+
+# Activation functions
+dense_activation='relu'
+output_activation='softmax'
+
+learning_rate=0.001
+beta_1=0.9
+beta_2=0.999
+loss="categorical_crossentropy"
+metrics=["accuracy",'precision','recall']
+epochs= 10
+
 # Alogrithm parameters
 n_estimators: 100
 max_depth: 10
