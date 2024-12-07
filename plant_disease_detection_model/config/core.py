@@ -11,10 +11,10 @@ from typing import Dict, List
 from pydantic import BaseModel
 from strictyaml import YAML, load
 
-import bikeshare_model
+import plant_disease_detection_model
 
 # Project Directories
-PACKAGE_ROOT = Path(bikeshare_model.__file__).resolve().parent
+PACKAGE_ROOT = Path(plant_disease_detection_model.__file__).resolve().parent
 ROOT = PACKAGE_ROOT.parent
 CONFIG_FILE_PATH = PACKAGE_ROOT / "config.yml"
 #print(CONFIG_FILE_PATH)

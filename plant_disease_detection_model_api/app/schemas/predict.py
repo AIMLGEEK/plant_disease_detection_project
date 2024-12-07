@@ -2,8 +2,7 @@ from typing import Any, List, Optional
 import datetime
 
 from pydantic import BaseModel
-from bikeshare_model.processing.validation import DataInputSchema
-
+from plant_disease_detection_model.processing.validation import DataInputSchema
 
 class PredictionResults(BaseModel):
     errors: Optional[Any]

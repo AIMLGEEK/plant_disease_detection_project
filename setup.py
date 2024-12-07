@@ -6,8 +6,8 @@ from pathlib import Path
 from setuptools import find_packages, setup
 
 # Package meta-data.
-NAME = 'bikeshare_model'
-DESCRIPTION = "Bikeshare dataset regression model package "
+NAME = 'plant_disease_detection_model'
+DESCRIPTION = "Plant Disease prediction deep learning model package "
 EMAIL = "------"
 AUTHOR = "----------"
 REQUIRES_PYTHON = ">=3.7.0"
@@ -25,7 +25,7 @@ about = {}
 ROOT_DIR = Path(__file__).resolve().parent
 print(ROOT_DIR)
 REQUIREMENTS_DIR = ROOT_DIR / 'requirements'
-PACKAGE_DIR = ROOT_DIR / 'bikeshare_model'
+PACKAGE_DIR = ROOT_DIR / 'plant_disease_detection_model'
 with open(PACKAGE_DIR / "VERSION") as f:
     _version = f.read().strip()
     about["__version__"] = _version

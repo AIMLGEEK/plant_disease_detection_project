@@ -8,10 +8,10 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 
-from bikeshare_model.config.core import config
-from bikeshare_model.processing.features import WeekdayImputer, WeathersitImputer
-from bikeshare_model.processing.features import Mapper
-from bikeshare_model.processing.features import OutlierHandler, WeekdayOneHotEncoder
+from plant_disease_detection_model.config.core import config
+from plant_disease_detection_model.processing.features import WeekdayImputer, WeathersitImputer
+from plant_disease_detection_model.processing.features import Mapper
+from plant_disease_detection_model.processing.features import OutlierHandler, WeekdayOneHotEncoder
 
 bikeshare_pipe = Pipeline([
 

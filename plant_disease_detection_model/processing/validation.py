@@ -11,8 +11,8 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel, ValidationError
 
-from bikeshare_model.config.core import config
-from bikeshare_model.processing.data_manager import pre_pipeline_preparation
+from plant_disease_detection_model.config.core import config
+from plant_disease_detection_model.processing.data_manager import pre_pipeline_preparation
 
 
 def validate_inputs(*, input_df: pd.DataFrame) -> Tuple[pd.DataFrame, Optional[dict]]:

@@ -1,15 +1,15 @@
 # Package Overview
-package_name: bikeshare_model
+package_name: plant_disease_detection_model
 
 # Data Files
 training_data_file: bike-rental-dataset.csv
 
 # Variables
-# The variable we are attempting to predict (cnt)
-target: cnt
+# The variable we are attempting to predict (disease)
+target: disease
 
-pipeline_name: bikeshare_model
-pipeline_save_file: bikeshare__model_output_v
+pipeline_name: plant_disease_detection_model
+pipeline_save_file: plant_disease_detection_model_output_v
 
 # Features that will go inside processing pipeline
 features:

@@ -8,15 +8,15 @@ from typing import Union
 import pandas as pd
 import numpy as np
 
-from bikeshare_model import __version__ as _version
-from bikeshare_model.config.core import config
-from bikeshare_model.processing.data_manager import load_pipeline
-from bikeshare_model.processing.data_manager import pre_pipeline_preparation
-from bikeshare_model.processing.validation import validate_inputs
+from plant_disease_detection_model import __version__ as _version
+from plant_disease_detection_model.config.core import config
+from plant_disease_detection_model.processing.data_manager import load_pipeline
+from plant_disease_detection_model.processing.data_manager import pre_pipeline_preparation
+from plant_disease_detection_model.processing.validation import validate_inputs
 
 
 pipeline_file_name = f"{config.app_config.pipeline_save_file}{_version}.pkl"
-bikeshare_pipe = load_pipeline(file_name = pipeline_file_name)
+plant_disease_detection_pipe = load_pipeline(file_name = pipeline_file_name)
 
 
 def make_prediction(*, input_data: Union[pd.DataFrame, dict]) -> dict:
@@ -31,7 +31,7 @@ def make_prediction(*, input_data: Union[pd.DataFrame, dict]) -> dict:
     results = {"predictions": None, "version": _version, "errors": errors}
       
     if not errors:
-        predictions = bikeshare_pipe.predict(validated_data)
+        predictions = plant_disease_detection_pipe.predict(validated_data)
         results = {"predictions": np.floor(predictions), "version": _version, "errors": errors}
         print(results)
 

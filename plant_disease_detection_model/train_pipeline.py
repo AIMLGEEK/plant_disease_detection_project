@@ -8,9 +8,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 
-from bikeshare_model.config.core import config
-from bikeshare_model.pipeline import bikeshare_pipe
-from bikeshare_model.processing.data_manager import load_dataset, save_pipeline
+from plant_disease_detection_model.config.core import config
+from plant_disease_detection_model.pipeline import bikeshare_pipe
+from plant_disease_detection_model.processing.data_manager import load_dataset, save_pipeline
 
 def run_training() -> None:
     
@@ -31,7 +31,7 @@ def run_training() -> None:
     )
 
     # Pipeline fitting
-    bikeshare_pipe.fit(X_train, y_train)
+    plant_disease_detection_pipe.fit(X_train, y_train)
     #y_pred = bikeshare_pipe.predict(X_test)
 
     # Calculate the score/error

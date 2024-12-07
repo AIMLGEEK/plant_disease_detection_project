@@ -10,8 +10,8 @@ parent, root = file.parent, file.parents[1]
 sys.path.append(str(root))
 
 import numpy as np
-from bikeshare_model.config.core import config
-from bikeshare_model.processing.features import WeekdayImputer, WeathersitImputer, Mapper, OutlierHandler, WeekdayOneHotEncoder
+from plant_disease_detection_model.config.core import config
+from plant_disease_detection_model.processing.features import WeekdayImputer, WeathersitImputer, Mapper, OutlierHandler, WeekdayOneHotEncoder
 
 
 def test_weekday_variable_imputer(sample_input_data):

@@ -11,8 +11,8 @@ import joblib
 import pandas as pd
 from sklearn.pipeline import Pipeline
 
-from bikeshare_model import __version__ as _version
-from bikeshare_model.config.core import DATASET_DIR, TRAINED_MODEL_DIR, config
+from plant_disease_detection_model import __version__ as _version
+from plant_disease_detection_model.config.core import DATASET_DIR, TRAINED_MODEL_DIR, config
 
 
 ##  Pre-Pipeline Preparation

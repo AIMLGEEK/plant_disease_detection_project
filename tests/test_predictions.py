@@ -10,7 +10,7 @@ sys.path.append(str(root))
 import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
 
-from bikeshare_model.predict import make_prediction
+from plant_disease_detection_model.predict import make_prediction
 
 
 def test_make_prediction(sample_input_data):
