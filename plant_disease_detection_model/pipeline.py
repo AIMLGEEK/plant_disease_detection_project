@@ -13,7 +13,7 @@ from plant_disease_detection_model.processing.features import WeekdayImputer, We
 from plant_disease_detection_model.processing.features import Mapper
 from plant_disease_detection_model.processing.features import OutlierHandler, WeekdayOneHotEncoder
 
-bikeshare_pipe = Pipeline([
+plantdiseasedetection_pipe = Pipeline([
 
     ######### Imputation ###########
     ('weekday_imputation', WeekdayImputer(variable = config.model_config.weekday_var, 
