@@ -2,7 +2,7 @@
 package_name: plant_disease_detection_model
 
 # Data Files
-training_data_file: bike-rental-dataset.csv
+training_data_file: New_Plant_Diseases_Dataset_Augmented
 
 # Variables
 # The variable we are attempting to predict (disease)

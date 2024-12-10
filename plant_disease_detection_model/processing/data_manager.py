@@ -14,6 +14,36 @@ from sklearn.pipeline import Pipeline
 from plant_disease_detection_model import __version__ as _version
 from plant_disease_detection_model.config.core import DATASET_DIR, TRAINED_MODEL_DIR, config
 
+import tensorflow as tf
+
+def dataset_scaling_reshaping(data_dir: str, subset_type: str):
+    generator=tf.keras.preprocessing.image.ImageDataGenerator(
+        rescale=1/255.0,
+        preprocessing_function=None,
+        validation_split=0.1
+    ).flow_from_directory(data_dir,
+                      config.batch_size,
+                      target_size=(config.size, config.size),
+                      subset=subset_type,
+                      config.color_mode,
+                      config.class_mode,
+                      shuffle=True)
+    
+    return generator
+
+def dataset_scaling_reshaping(data_dir: str):
+    generator=tf.keras.preprocessing.image.ImageDataGenerator(
+        rescale=1/255.0,
+        preprocessing_function=None
+    ).flow_from_directory(data_dir,
+                      config.batch_size,
+                      target_size=(config.size, config.size),
+                      config.color_mode,
+                      config.class_mode,
+                      shuffle=True)
+    
+    return generator
+
 
 ##  Pre-Pipeline Preparation
 
@@ -31,7 +61,6 @@ def get_year_and_month(dataframe: pd.DataFrame, date_var: str):
     df['mnth'] = df[date_var].dt.month_name()
     
     return df
-
 
 
 def pre_pipeline_preparation(*, data_frame: pd.DataFrame) -> pd.DataFrame:

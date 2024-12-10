@@ -13,7 +13,7 @@ from plant_disease_detection_model.processing.features import WeekdayImputer, We
 from plant_disease_detection_model.processing.features import Mapper
 from plant_disease_detection_model.processing.features import OutlierHandler, WeekdayOneHotEncoder
 
-plantdiseasedetection_pipe = Pipeline([
+plant_disease_detection_pipe = Pipeline([
 
     ######### Imputation ###########
     ('weekday_imputation', WeekdayImputer(variable = config.model_config.weekday_var, 
@@ -23,23 +23,8 @@ plantdiseasedetection_pipe = Pipeline([
     ######### Mapper ###########
     ('map_yr', Mapper(variable = config.model_config.yr_var, mappings = config.model_config.yr_mappings)),
     
-    ('map_mnth', Mapper(variable = config.model_config.mnth_var, mappings = config.model_config.mnth_mappings)),
-    
-    ('map_season', Mapper(variable = config.model_config.season_var, mappings = config.model_config.season_mappings)),
-    
-    ('map_weathersit', Mapper(variable = config.model_config.weathersit_var, mappings = config.model_config.weathersit_mappings)),
-    
-    ('map_holiday', Mapper(variable = config.model_config.holiday_var, mappings = config.model_config.holiday_mappings)),
-    
-    ('map_workingday', Mapper(variable = config.model_config.workingday_var, mappings = config.model_config.workingday_mappings)),
-    
-    ('map_hr', Mapper(variable = config.model_config.hr_var, mappings = config.model_config.hr_mappings)),
-    
     ######## Handle outliers ########
     ('handle_outliers_temp', OutlierHandler(variable = config.model_config.temp_var)),
-    ('handle_outliers_atemp', OutlierHandler(variable = config.model_config.atemp_var)),
-    ('handle_outliers_hum', OutlierHandler(variable = config.model_config.hum_var)),
-    ('handle_outliers_windspeed', OutlierHandler(variable = config.model_config.windspeed_var)),
 
     ######## One-hot encoding ########
     ('encode_weekday', WeekdayOneHotEncoder(variable = config.model_config.weekday_var)),
@@ -47,9 +32,17 @@ plantdiseasedetection_pipe = Pipeline([
     # Scale features
     ('scaler', StandardScaler()),
     
-    # Regressor
-    ('model_rf', RandomForestRegressor(n_estimators = config.model_config.n_estimators, 
-                                       max_depth = config.model_config.max_depth,
-                                      random_state = config.model_config.random_state))
+    # Dataset pre processing
+    ('train_generator', dataset_scaling_reshaping(variable= config.train_dir, "training")),
+    ('validation_generator', dataset_scaling_reshaping(variable= config.validation_dir, "validation")),
+    ('test_generator', dataset_scaling_reshaping(variable= config.test_dir)),
+    
+    # MobileNetv2
+    ('model_mobilenetv2', model.fit(train_generator,
+                    config.epochs,
+                    batch_size=None,
+                    validation_data = valid_generator,
+                    callbacks = callbacks
+                    ))
     
     ])
