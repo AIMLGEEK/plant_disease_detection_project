@@ -35,48 +35,19 @@ class AppConfig(BaseModel):
 
 
 class ModelConfig(BaseModel):
-    """
-    All configuration relevant to model
-    training and feature engineering.
-    """
-
-    target: str
-    features: List[str]
-    unused_fields: List[str]
-    
-    date_var: str
-    yr_var: str
-    mnth_var: str
-    season_var: str
-    hr_var: str
-    holiday_var: str
-    workingday_var: str
-    weekday_var: str
-    weathersit_var: str
-    temp_var: str
-    atemp_var: str
-    hum_var: str
-    windspeed_var: str
-        
-    yr_mappings: Dict[int, int]
-    mnth_mappings: Dict[str, int]
-    season_mappings: Dict[str, int]
-    weathersit_mappings: Dict[str, int]
-    holiday_mappings: Dict[str, int]
-    workingday_mappings: Dict[str, int]
-    hr_mappings: Dict[str, int]
-    
     test_size:float
     random_state: int
     n_estimators: int
     max_depth: int
+    num_classes: int
+    batch_size: int
 
 
 class Config(BaseModel):
     """Master config object."""
 
     app_config: AppConfig
-    model_config: ModelConfig
+    self_model_config: ModelConfig
 
 
 def find_config_file() -> Path:
@@ -110,7 +81,7 @@ def create_and_validate_config(parsed_config: YAML = None) -> Config:
     # specify the data attribute from the strictyaml YAML type.
     _config = Config(
         app_config = AppConfig(**parsed_config.data),
-        model_config = ModelConfig(**parsed_config.data),
+        self_model_config = ModelConfig(**parsed_config.data),
     )
 
     return _config
