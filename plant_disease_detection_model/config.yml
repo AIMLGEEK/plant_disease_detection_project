@@ -31,6 +31,8 @@ dense_activation: 'relu'
 output_activation: 'softmax'
 
 learning_rate: 0.001
+mobilenet_weight: 0.6
+resnet_weight: 0.4
 beta_1: 0.9
 beta_2: 0.999
 loss: "categorical_crossentropy"

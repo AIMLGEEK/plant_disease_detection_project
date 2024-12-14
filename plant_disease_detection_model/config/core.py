@@ -43,6 +43,9 @@ class ModelConfig(BaseModel):
     num_classes: int
     batch_size: int
     epochs: int
+    learning_rate: float
+    mobilenet_weight: float
+    resnet_weight: float
 
 
 class Config(BaseModel):

@@ -1,7 +1,7 @@
 import joblib
 from sklearn.pipeline import Pipeline
 from data_loader import DataLoader
-from model import MobileNetV2Wrapper
+from model import EnsembleModelWrapper
 from plant_disease_detection_model.config.core import config, DATASET_DIR
 from pathlib import Path
 
@@ -16,11 +16,11 @@ def train_model():
     valid_dir = Path(DATASET_DIR / 'augmented_data/valid')
 
     data_loader = DataLoader(img_size, batch_size)
-    mobilenet_v2 = MobileNetV2Wrapper(input_shape, num_classes)
+    ensemble_model = EnsembleModelWrapper(input_shape, num_classes)
 
     pipeline = Pipeline([
         ('data_loader', data_loader),
-        ('mobilenet_v2', mobilenet_v2)
+        ('ensemble_model', ensemble_model)
     ])
 
     pipeline.fit((train_dir, valid_dir))
