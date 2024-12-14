@@ -5,7 +5,8 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from sklearn.base import BaseEstimator, TransformerMixin
 from pathlib import Path
-from plant_disease_detection_model.config.core import config
+from plant_disease_detection_model.config.core import config, DATASET_DIR
+from plant_disease_detection_model.utils.classname_extractor import get_class_names_from_directory
 
 class MobileNetV2Wrapper(BaseEstimator, TransformerMixin):
     def __init__(self, input_shape, num_classes, learning_rate=0.001):
@@ -13,6 +14,7 @@ class MobileNetV2Wrapper(BaseEstimator, TransformerMixin):
         self.num_classes = num_classes
         self.learning_rate = learning_rate
         self.model = self._build_model()
+        self.train_dir = DATASET_DIR / config.app_config.training_data_folder
 
     def _build_model(self):
         base_model = MobileNetV2(include_top=False, weights='imagenet', input_shape=self.input_shape)
@@ -64,4 +66,16 @@ class MobileNetV2Wrapper(BaseEstimator, TransformerMixin):
         return self
 
     def predict(self, X):
-        return self.model.predict(X)
+        # Predict probabilities
+        predictions = self.model.predict(X)
+
+        # Get predicted class IDs
+        predicted_class_ids = predictions.argmax(axis=-1)
+
+        # Dynamically load class names from the training directory
+        class_names = get_class_names_from_directory(self.train_dir)
+
+        # Map class IDs to class names
+        predicted_class_names = [class_names[idx] for idx in predicted_class_ids]
+
+        return predicted_class_names

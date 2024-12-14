@@ -1,9 +1,8 @@
-import os
 import joblib
 import numpy as np
 from tensorflow.keras.preprocessing import image
-from plant_disease_detection_model.config.core import config
-
+from plant_disease_detection_model.utils.classname_extractor import get_class_names_from_directory
+from plant_disease_detection_model.config.core import config, DATASET_DIR
 
 def load_pipeline(model_path):
     """Load the trained model pipeline."""
@@ -32,13 +31,18 @@ def make_prediction(model_path, img_path):
     # Predict using the model
     prediction = pipeline.named_steps['mobilenet_v2'].model.predict(img_array)
     predicted_class = np.argmax(prediction, axis=1)
+    # Dynamically load class names from the training directory
+    class_names = get_class_names_from_directory(DATASET_DIR / config.app_config.training_data_folder)
 
-    return predicted_class[0]
+    # Map class IDs to class names
+    predicted_class_names = [class_names[idx] for idx in predicted_class]
+
+    return predicted_class_names
 
 
 if __name__ == "__main__":
     model_path = 'models/saved_model/model_pipeline.pkl'
-    img_path = 'path/to/your/image.jpg'
+    img_path = 'D:\AppleCedarRust1.JPG'
 
     prediction = make_prediction(model_path, img_path)
     print(f"Predicted class: {prediction}")
