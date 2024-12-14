@@ -4,6 +4,7 @@ from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout, Batc
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from sklearn.base import BaseEstimator, TransformerMixin
+from pathlib import Path
 from plant_disease_detection_model.config.core import config
 
 class MobileNetV2Wrapper(BaseEstimator, TransformerMixin):
@@ -36,12 +37,30 @@ class MobileNetV2Wrapper(BaseEstimator, TransformerMixin):
         return model
 
     def fit(self, X, y=None):
+        """
+        Expects X as a tuple (train_dataset, valid_dataset) from DataLoader.
+        """
+        if not isinstance(X, tuple) or len(X) != 2:
+            raise ValueError("Expected X to be a tuple of (train_dataset, valid_dataset).")
+
+        train_dataset, valid_dataset = X
+
         callbacks = [
             tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True),
-            tf.keras.callbacks.ModelCheckpoint('models/saved_model/best_model.keras', monitor='val_loss', save_best_only=True),
+            tf.keras.callbacks.ModelCheckpoint(
+                str(Path('models/saved_model/best_model.keras')),
+                monitor='val_loss',
+                save_best_only=True
+            ),
             tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, min_lr=0.000001)
         ]
-        self.model.fit(X, epochs=config.self_model_config.epochs, validation_data=y, callbacks=callbacks)
+
+        self.model.fit(
+            train_dataset,
+            epochs=config.self_model_config.epochs,
+            validation_data=valid_dataset,
+            callbacks=callbacks
+        )
         return self
 
     def predict(self, X):

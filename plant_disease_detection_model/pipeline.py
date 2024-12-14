@@ -1,8 +1,9 @@
 import joblib
 from sklearn.pipeline import Pipeline
-from data_loader import ImageDataLoader
+from data_loader import DataLoader
 from model import MobileNetV2Wrapper
 from plant_disease_detection_model.config.core import config, DATASET_DIR
+from pathlib import Path
 
 def train_model():
 
@@ -11,10 +12,10 @@ def train_model():
     num_classes = config.self_model_config.num_classes
     input_shape = img_size + (3,)
 
-    train_dir = DATASET_DIR / 'augmented_data/train'
-    valid_dir = DATASET_DIR / 'augmented_data/valid'
+    train_dir = Path(DATASET_DIR / 'augmented_data/train')
+    valid_dir = Path(DATASET_DIR / 'augmented_data/valid')
 
-    data_loader = ImageDataLoader(img_size, batch_size)
+    data_loader = DataLoader(img_size, batch_size)
     mobilenet_v2 = MobileNetV2Wrapper(input_shape, num_classes)
 
     pipeline = Pipeline([
@@ -22,7 +23,7 @@ def train_model():
         ('mobilenet_v2', mobilenet_v2)
     ])
 
-    pipeline.fit(train_dir, valid_dir)
+    pipeline.fit((train_dir, valid_dir))
 
     # Save the trained model
     joblib.dump(pipeline, 'models/saved_model/model_pipeline.pkl')
