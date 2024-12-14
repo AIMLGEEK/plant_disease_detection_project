@@ -1,48 +1,31 @@
-import sys
-from pathlib import Path
-file = Path(__file__).resolve()
-parent, root = file.parent, file.parents[1]
-sys.path.append(str(root))
-
+import joblib
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestRegressor
+from data_loader import ImageDataLoader
+from model import MobileNetV2Wrapper
+from plant_disease_detection_model.config.core import config, DATASET_DIR
 
-from plant_disease_detection_model.config.core import config
-from plant_disease_detection_model.processing.features import WeekdayImputer, WeathersitImputer
-from plant_disease_detection_model.processing.features import Mapper
-from plant_disease_detection_model.processing.features import OutlierHandler, WeekdayOneHotEncoder
+def train_model():
 
-plant_disease_detection_pipe = Pipeline([
+    img_size = (config.app_config.size, config.app_config.size)
+    batch_size = config.self_model_config.batch_size
+    num_classes = config.self_model_config.num_classes
+    input_shape = img_size + (3,)
 
-    ######### Imputation ###########
-    ('weekday_imputation', WeekdayImputer(variable = config.model_config.weekday_var, 
-                                          date_var= config.model_config.date_var)),
-    ('weathersit_imputation', WeathersitImputer(variable = config.model_config.weathersit_var)),
-    
-    ######### Mapper ###########
-    ('map_yr', Mapper(variable = config.model_config.yr_var, mappings = config.model_config.yr_mappings)),
-    
-    ######## Handle outliers ########
-    ('handle_outliers_temp', OutlierHandler(variable = config.model_config.temp_var)),
+    train_dir = DATASET_DIR / 'augmented_data/train'
+    valid_dir = DATASET_DIR / 'augmented_data/valid'
 
-    ######## One-hot encoding ########
-    ('encode_weekday', WeekdayOneHotEncoder(variable = config.model_config.weekday_var)),
+    data_loader = ImageDataLoader(img_size, batch_size)
+    mobilenet_v2 = MobileNetV2Wrapper(input_shape, num_classes)
 
-    # Scale features
-    ('scaler', StandardScaler()),
-    
-    # Dataset pre processing
-    ('train_generator', dataset_scaling_reshaping(variable= config.train_dir, "training")),
-    ('validation_generator', dataset_scaling_reshaping(variable= config.validation_dir, "validation")),
-    ('test_generator', dataset_scaling_reshaping(variable= config.test_dir)),
-    
-    # MobileNetv2
-    ('model_mobilenetv2', model.fit(train_generator,
-                    config.epochs,
-                    batch_size=None,
-                    validation_data = valid_generator,
-                    callbacks = callbacks
-                    ))
-    
+    pipeline = Pipeline([
+        ('data_loader', data_loader),
+        ('mobilenet_v2', mobilenet_v2)
     ])
+
+    pipeline.fit(train_dir, valid_dir)
+
+    # Save the trained model
+    joblib.dump(pipeline, 'models/saved_model/model_pipeline.pkl')
+
+if __name__ == "__main__":
+    train_model()

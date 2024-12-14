@@ -1,27 +1,48 @@
 import tensorflow as tf
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout, BatchNormalization
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+from sklearn.base import BaseEstimator, TransformerMixin
+from plant_disease_detection_model.config.core import config
 
-def build_model(input_shape, num_classes):
-    base_model = tf.keras.applications.MobileNetV2(
-        input_shape=input_shape,
-        include_top=False,
-        weights='imagenet'
-    )
-    base_model.trainable = False
+class MobileNetV2Wrapper(BaseEstimator, TransformerMixin):
+    def __init__(self, input_shape, num_classes, learning_rate=0.001):
+        self.input_shape = input_shape
+        self.num_classes = num_classes
+        self.learning_rate = learning_rate
+        self.model = self._build_model()
 
-    inputs = tf.keras.Input(shape=input_shape)
-    x = base_model(inputs, training=False)
-    x = tf.keras.layers.GlobalAveragePooling2D()(x)
-    x = tf.keras.layers.Dense(256, activation='relu')(x)
-    x = tf.keras.layers.BatchNormalization()(x)
-    x = tf.keras.layers.Dropout(0.3)(x)
-    x = tf.keras.layers.Dense(64, activation='relu')(x)
-    x = tf.keras.layers.BatchNormalization()(x)
-    x = tf.keras.layers.Dropout(0.3)(x)
-    outputs = tf.keras.layers.Dense(num_classes, activation='softmax')(x)
+    def _build_model(self):
+        base_model = MobileNetV2(include_top=False, weights='imagenet', input_shape=self.input_shape)
+        base_model.trainable = False
 
-    model = tf.keras.Model(inputs, outputs)
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-                  loss='categorical_crossentropy',
-                  metrics=['accuracy', 'precision', 'recall'])
+        inputs = tf.keras.Input(shape=self.input_shape)
+        x = base_model(inputs, training=False)
+        x = GlobalAveragePooling2D()(x)
+        x = Dense(256, activation='relu')(x)
+        x = BatchNormalization()(x)
+        x = Dropout(0.3)(x)
+        x = Dense(64, activation='relu')(x)
+        x = BatchNormalization()(x)
+        x = Dropout(0.3)(x)
+        outputs = Dense(self.num_classes, activation='softmax')(x)
 
-    return model
+        model = Model(inputs, outputs)
+        model.compile(optimizer=Adam(learning_rate=self.learning_rate),
+                      loss='categorical_crossentropy',
+                      metrics=['accuracy', 'precision', 'recall'])
+
+        return model
+
+    def fit(self, X, y=None):
+        callbacks = [
+            tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True),
+            tf.keras.callbacks.ModelCheckpoint('models/saved_model/best_model.keras', monitor='val_loss', save_best_only=True),
+            tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, min_lr=0.000001)
+        ]
+        self.model.fit(X, epochs=config.self_model_config.epochs, validation_data=y, callbacks=callbacks)
+        return self
+
+    def predict(self, X):
+        return self.model.predict(X)

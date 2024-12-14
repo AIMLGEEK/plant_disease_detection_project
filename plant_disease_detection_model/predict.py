@@ -1,47 +1,44 @@
-import sys
-from pathlib import Path
-file = Path(__file__).resolve()
-parent, root = file.parent, file.parents[1]
-sys.path.append(str(root))
-
-from typing import Union
-import pandas as pd
+import os
+import joblib
 import numpy as np
-
-from plant_disease_detection_model import __version__ as _version
+from tensorflow.keras.preprocessing import image
 from plant_disease_detection_model.config.core import config
-from plant_disease_detection_model.processing.data_manager import load_pipeline
-from plant_disease_detection_model.processing.data_manager import pre_pipeline_preparation
-from plant_disease_detection_model.processing.validation import validate_inputs
 
 
-pipeline_file_name = f"{config.app_config.pipeline_save_file}{_version}.pkl"
-plant_disease_detection_pipe = load_pipeline(file_name = pipeline_file_name)
+def load_pipeline(model_path):
+    """Load the trained model pipeline."""
+    return joblib.load(model_path)
 
 
-def make_prediction(*, input_data: Union[pd.DataFrame, dict]) -> dict:
-    """Make a prediction using a saved model """
-    
-    validated_data, errors = validate_inputs(input_df = pd.DataFrame(input_data))
-    
-    #validated_data = validated_data.reindex(columns = ['dteday', 'season', 'hr', 'holiday', 'weekday', 'workingday', 
-    #                                                   'weathersit', 'temp', 'atemp', 'hum', 'windspeed', 'yr', 'mnth'])
-    validated_data = validated_data.reindex(columns = config.model_config.features)
-    
-    results = {"predictions": None, "version": _version, "errors": errors}
-      
-    if not errors:
-        predictions = plant_disease_detection_pipe.predict(validated_data)
-        results = {"predictions": np.floor(predictions), "version": _version, "errors": errors}
-        print(results)
+def preprocess_image(img_path, target_size):
+    """Preprocess the image to be compatible with the model input."""
+    img = image.load_img(img_path, target_size=target_size)
+    img_array = image.img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0)
+    img_array /= 255.0  # Rescaling
+    return img_array
 
-    return results
 
+def make_prediction(model_path, img_path):
+    """Make a prediction using the trained model pipeline."""
+
+    # Load model pipeline
+    pipeline = load_pipeline(model_path)
+
+    # Preprocess image
+    input_shape = pipeline.named_steps['mobilenet_v2'].input_shape
+    img_array = preprocess_image(img_path, input_shape[:2])
+
+    # Predict using the model
+    prediction = pipeline.named_steps['mobilenet_v2'].model.predict(img_array)
+    predicted_class = np.argmax(prediction, axis=1)
+
+    return predicted_class[0]
 
 
 if __name__ == "__main__":
+    model_path = 'models/saved_model/model_pipeline.pkl'
+    img_path = 'path/to/your/image.jpg'
 
-    data_in = {'dteday': ['2012-11-6'], 'season': ['winter'], 'hr': ['6pm'], 'holiday': ['No'], 'weekday': ['Tue'],
-               'workingday': ['Yes'], 'weathersit': ['Clear'], 'temp': [16], 'atemp': [17.5], 'hum': [30], 'windspeed': [10]}
-
-    make_prediction(input_data = data_in)
+    prediction = make_prediction(model_path, img_path)
+    print(f"Predicted class: {prediction}")

@@ -42,6 +42,7 @@ class ModelConfig(BaseModel):
     max_depth: int
     num_classes: int
     batch_size: int
+    epochs: int
 
 
 class Config(BaseModel):
