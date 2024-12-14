@@ -29,9 +29,10 @@ class AppConfig(BaseModel):
     """
 
     package_name: str
-    training_data_file: str
     pipeline_name: str
     pipeline_save_file: str
+    training_data_folder: str
+    size: int
 
 
 class ModelConfig(BaseModel):

@@ -2,7 +2,7 @@
 package_name: plant_disease_detection_model
 
 # Data Files
-training_data_file: datasets/new-plant-diseases-dataset
+training_data_folder: new-plant-diseases-dataset
 
 # Variables
 # The variable we are attempting to predict (disease)
@@ -23,7 +23,6 @@ batch_size: 128
 color_mode: 'rgb'
 class_mode: 'categorical'
 size: 224
-target_size: (size,size)
 input_shape :  (224, 224, 3)
 num_classes: 38
 
