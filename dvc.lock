@@ -1,0 +1,28 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python plant_disease_detection_model/preprocess_pipeline/preprocess_data.py
+      --src_dir plant_disease_detection_model/datasets/new-plant-diseases-dataset
+      --train_dir plant_disease_detection_model/datasets/augmented_data/train --valid_dir
+      plant_disease_detection_model/datasets/augmented_data/valid
+    deps:
+    - path: plant_disease_detection_model/datasets/new-plant-diseases-dataset
+      hash: md5
+      md5: beb345e0c4dab19293dcbc68a10d0a86.dir
+      size: 83677235
+      nfiles: 5763
+    - path: plant_disease_detection_model/preprocess_pipeline/preprocess_data.py
+      hash: md5
+      md5: fc6f081d39a9720a22df01eae624be71
+      size: 2821
+    outs:
+    - path: plant_disease_detection_model/datasets/augmented_data/train
+      hash: md5
+      md5: 302fb92b3863b589e9dfb9ee12b25aff.dir
+      size: 75280714
+      nfiles: 5186
+    - path: plant_disease_detection_model/datasets/augmented_data/valid
+      hash: md5
+      md5: 9d95d7079b8e811010bf47403a904106.dir
+      size: 8396521
+      nfiles: 577
