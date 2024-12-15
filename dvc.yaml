@@ -1,0 +1,9 @@
+stages:
+  preprocess:
+    cmd: python plant_disease_detection_model/preprocess_pipeline/preprocess_data.py --src_dir plant_disease_detection_model/datasets/new-plant-diseases-dataset --train_dir plant_disease_detection_model/datasets/augmented_data/train --valid_dir plant_disease_detection_model/datasets/augmented_data/valid
+    deps:
+      - plant_disease_detection_model/preprocess_pipeline/preprocess_data.py
+      - plant_disease_detection_model/datasets/new-plant-diseases-dataset
+    outs:
+      - plant_disease_detection_model/datasets/augmented_data/train
+      - plant_disease_detection_model/datasets/augmented_data/valid
