@@ -3,14 +3,15 @@ import shutil
 import numpy as np
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
-
-from plant_disease_detection_model.config.core import config, DATASET_DIR
+from plant_disease_detection_model.config.core import config
 
 def create_dir(dir_path):
+    """Create a directory if it doesn't exist."""
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
 def split_data(src_dir, train_dir, valid_dir, valid_size=0.1):
+    """Split data into training and validation sets."""
     categories = [d for d in os.listdir(src_dir) if os.path.isdir(os.path.join(src_dir, d))]
 
     for category in categories:
@@ -31,6 +32,7 @@ def split_data(src_dir, train_dir, valid_dir, valid_size=0.1):
             copy_file(os.path.join(src_dir, image), os.path.join(valid_dir, image))
 
 def copy_file(src, dst):
+    """Copy file from source to destination."""
     try:
         shutil.copy(src, dst)
     except PermissionError:
@@ -38,46 +40,71 @@ def copy_file(src, dst):
     except Exception as e:
         print(f"Error copying file {src} to {dst}: {e}")
 
-def preprocess_data():
+def preprocess_data(src_dir, train_dir, valid_dir, valid_size=0.1):
+    """
+    Main preprocessing function to split and prepare datasets.
 
-    src_dir = DATASET_DIR / config.app_config.training_data_folder
-    train_dir = DATASET_DIR / 'augmented_data/train'
-    valid_dir = DATASET_DIR / 'augmented_data/valid'
-
+    Args:
+        src_dir (Path): Path to the source directory with raw data.
+        train_dir (Path): Path to save the training data.
+        valid_dir (Path): Path to save the validation data.
+        valid_size (float): Proportion of validation data.
+    """
+    # Ensure output directories exist
     create_dir(train_dir)
     create_dir(valid_dir)
 
-    split_data(src_dir, train_dir, valid_dir)
+    # Split data
+    split_data(src_dir, train_dir, valid_dir, valid_size)
 
     # Prepare data generators
-    size = config.self_model_config.num_classes
-    batch_size = config.self_model_config.batch_size
+    batch_size = config.self_model_config.batch_size  # You can adjust this based on your needs
+    image_size = (config.app_config.size, config.app_config.size)  # Replace with your desired image size
 
     train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
-        rescale=1 / 255.0,
-        validation_split=0.1
+        rescale=1.0 / 255.0  # Normalizing pixel values to [0, 1]
+    )
+
+    valid_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
+        rescale=1.0 / 255.0  # Normalizing pixel values to [0, 1]
     )
 
     train_generator = train_datagen.flow_from_directory(
         train_dir,
-        target_size=(config.app_config.size, config.app_config.size),
+        target_size=image_size,
         batch_size=batch_size,
-        subset="training",
         class_mode='categorical',
         shuffle=True
     )
 
-    valid_generator = train_datagen.flow_from_directory(
+    valid_generator = valid_datagen.flow_from_directory(
         valid_dir,
-        target_size=(config.app_config.size, config.app_config.size),
+        target_size=image_size,
         batch_size=batch_size,
-        subset="validation",
         class_mode='categorical',
         shuffle=False
     )
 
     return train_generator, valid_generator
 
-
 if __name__ == "__main__":
-    preprocess_data()
+    import argparse
+
+    # Parse arguments
+    parser = argparse.ArgumentParser(description="Preprocess raw dataset.")
+    parser.add_argument("--src_dir", type=str, required=True, help="Path to the raw dataset directory.")
+    parser.add_argument("--train_dir", type=str, required=True, help="Path to save the training dataset.")
+    parser.add_argument("--valid_dir", type=str, required=True, help="Path to save the validation dataset.")
+    parser.add_argument("--valid_size", type=float, default=0.1, help="Validation split size (default: 0.1).")
+
+    args = parser.parse_args()
+
+    train_gen, valid_gen = preprocess_data(
+        src_dir=args.src_dir,
+        train_dir=args.train_dir,
+        valid_dir=args.valid_dir,
+        valid_size=args.valid_size
+    )
+
+    print(f"Training samples: {train_gen.samples}")
+    print(f"Validation samples: {valid_gen.samples}")
