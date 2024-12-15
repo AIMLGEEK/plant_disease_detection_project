@@ -2,6 +2,8 @@ import os
 import shutil
 import numpy as np
 from sklearn.model_selection import train_test_split
+import tensorflow as tf
+from plant_disease_detection_model.config.core import config
 
 def create_dir(dir_path):
     """Create a directory if it doesn't exist."""
@@ -55,6 +57,36 @@ def preprocess_data(src_dir, train_dir, valid_dir, valid_size=0.1):
     # Split data
     split_data(src_dir, train_dir, valid_dir, valid_size)
 
+    # Prepare data generators
+    batch_size = config.self_model_config.batch_size  # You can adjust this based on your needs
+    image_size = (config.app_config.size, config.app_config.size)  # Replace with your desired image size
+
+    train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
+        rescale=1.0 / 255.0  # Normalizing pixel values to [0, 1]
+    )
+
+    valid_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
+        rescale=1.0 / 255.0  # Normalizing pixel values to [0, 1]
+    )
+
+    train_generator = train_datagen.flow_from_directory(
+        train_dir,
+        target_size=image_size,
+        batch_size=batch_size,
+        class_mode='categorical',
+        shuffle=True
+    )
+
+    valid_generator = valid_datagen.flow_from_directory(
+        valid_dir,
+        target_size=image_size,
+        batch_size=batch_size,
+        class_mode='categorical',
+        shuffle=False
+    )
+
+    return train_generator, valid_generator
+
 if __name__ == "__main__":
     import argparse
 
@@ -67,9 +99,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    preprocess_data(
+    train_gen, valid_gen = preprocess_data(
         src_dir=args.src_dir,
         train_dir=args.train_dir,
         valid_dir=args.valid_dir,
         valid_size=args.valid_size
     )
+
+    print(f"Training samples: {train_gen.samples}")
+    print(f"Validation samples: {valid_gen.samples}")
