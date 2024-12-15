@@ -25,11 +25,11 @@ def make_prediction(model_path, img_path):
     pipeline = load_pipeline(model_path)
 
     # Preprocess image
-    input_shape = pipeline.named_steps['mobilenet_v2'].input_shape
+    input_shape = pipeline.named_steps['ensemble_model'].input_shape
     img_array = preprocess_image(img_path, input_shape[:2])
 
     # Predict using the model
-    prediction = pipeline.named_steps['mobilenet_v2'].model.predict(img_array)
+    prediction = pipeline.named_steps['ensemble_model'].model.predict(img_array)
     predicted_class = np.argmax(prediction, axis=1)
     # Dynamically load class names from the training directory
     class_names = get_class_names_from_directory(DATASET_DIR / config.app_config.training_data_folder)
