@@ -39,7 +39,6 @@ def make_prediction(model_path, img_path):
 
     return predicted_class_names
 
-
 if __name__ == "__main__":
     model_path = 'models/saved_model/model_pipeline.pkl'
     img_path = 'D:\AppleCedarRust1.JPG'
