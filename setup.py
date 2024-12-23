@@ -31,7 +31,7 @@ with open(PACKAGE_DIR / "VERSION") as f:
     about["__version__"] = _version
 
 
-# What packages are required for this module to be executed?
+# What packages arpyth  e required for this module to be executed?
 def list_reqs(fname="requirements.txt"):
     with open(REQUIREMENTS_DIR / fname) as fd:
         return fd.read().splitlines()

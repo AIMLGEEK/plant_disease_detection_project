@@ -1,2 +1,5 @@
 /plant_disease_detection_model.egg-info/
 .idea/
+/build/
+/dist/
+/.venv/
