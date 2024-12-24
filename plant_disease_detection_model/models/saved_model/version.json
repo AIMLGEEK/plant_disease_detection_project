@@ -1,6 +1,6 @@
 {
-  "version": "1.0.7",
-  "last_updated": "2024-12-24T10:22:30.615669",
+  "version": "1.0.9",
+  "last_updated": "2024-12-24T11:28:15.833049",
   "training_history": [
     {
       "version": "1.0.1",
@@ -70,6 +70,26 @@
         "final_accuracy": 0.41610273718833923,
         "val_loss": 1.1508383750915527,
         "val_accuracy": 0.3800104260444641
+      }
+    },
+    {
+      "version": "1.0.8",
+      "timestamp": "2024-12-24T11:02:14.095861",
+      "metrics": {
+        "final_loss": 1.2373989820480347,
+        "final_accuracy": 0.4240846633911133,
+        "val_loss": 1.00472891330719,
+        "val_accuracy": 0.5885823369026184
+      }
+    },
+    {
+      "version": "1.0.9",
+      "timestamp": "2024-12-24T11:28:15.833376",
+      "metrics": {
+        "final_loss": 0.8657471537590027,
+        "final_accuracy": 0.5320145487785339,
+        "val_loss": 0.6256105303764343,
+        "val_accuracy": 0.7905604839324951
       }
     }
   ]

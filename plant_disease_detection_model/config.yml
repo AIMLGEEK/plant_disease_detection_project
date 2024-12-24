@@ -37,7 +37,7 @@ beta_1: 0.9
 beta_2: 0.999
 loss: "categorical_crossentropy"
 metrics: ("accuracy",'precision','recall')
-epochs:  1
+epochs:  10
 
 # Alogrithm parameters
 n_estimators: 100

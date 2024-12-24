@@ -132,29 +132,29 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
 
         return tf.keras.Model(inputs, outputs)
 
-    def _build_resnet(self):
-        base_model = tf.keras.applications.ResNet50(
-            input_shape=self.input_shape,
-            include_top=False,
-            weights='imagenet'
-        )
-
-        # Unfreeze last few layers
-        for layer in base_model.layers[:-10]:
-            layer.trainable = False
-
-        inputs = tf.keras.Input(shape=self.input_shape)
-        x = base_model(inputs)
-        x = tf.keras.layers.GlobalAveragePooling2D()(x)
-        x = tf.keras.layers.Dense(256, activation='relu')(x)
-        x = tf.keras.layers.BatchNormalization()(x)
-        x = tf.keras.layers.Dropout(0.3)(x)
-        x = tf.keras.layers.Dense(64, activation='relu')(x)
-        x = tf.keras.layers.BatchNormalization()(x)
-        x = tf.keras.layers.Dropout(0.3)(x)
-        outputs = tf.keras.layers.Dense(self.num_classes, activation='softmax')(x)
-
-        return tf.keras.Model(inputs, outputs)
+    # def _build_resnet(self):
+    #     base_model = tf.keras.applications.ResNet50(
+    #         input_shape=self.input_shape,
+    #         include_top=False,
+    #         weights='imagenet'
+    #     )
+    #
+    #     # Unfreeze last few layers
+    #     for layer in base_model.layers[:-10]:
+    #         layer.trainable = False
+    #
+    #     inputs = tf.keras.Input(shape=self.input_shape)
+    #     x = base_model(inputs)
+    #     x = tf.keras.layers.GlobalAveragePooling2D()(x)
+    #     x = tf.keras.layers.Dense(256, activation='relu')(x)
+    #     x = tf.keras.layers.BatchNormalization()(x)
+    #     x = tf.keras.layers.Dropout(0.3)(x)
+    #     x = tf.keras.layers.Dense(64, activation='relu')(x)
+    #     x = tf.keras.layers.BatchNormalization()(x)
+    #     x = tf.keras.layers.Dropout(0.3)(x)
+    #     outputs = tf.keras.layers.Dense(self.num_classes, activation='softmax')(x)
+    #
+    #     return tf.keras.Model(inputs, outputs)
 
     def fit(self, X, y=None):
         if not isinstance(X, tuple) or len(X) != 2:
@@ -165,19 +165,19 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
 
         # Build models
         mobilenet = self._build_mobilenet()
-        resnet = self._build_resnet()
+        #resnet = self._build_resnet()
 
         # Create ensemble
         inputs = tf.keras.Input(shape=self.input_shape)
         mobilenet_output = mobilenet(inputs)
-        resnet_output = resnet(inputs)
+        #resnet_output = resnet(inputs)
 
-        ensemble_output = tf.keras.layers.Average()(
-            [self.mobilenet_weight * mobilenet_output,
-             self.resnet_weight * resnet_output]
-        )
+        #ensemble_output = tf.keras.layers.Average()(
+        #    [self.mobilenet_weight * mobilenet_output,
+        #     self.resnet_weight * resnet_output]
+        #)
 
-        self.model = tf.keras.Model(inputs, ensemble_output)
+        self.model = tf.keras.Model(inputs, mobilenet_output)
 
         # Compile model
         self.model.compile(
