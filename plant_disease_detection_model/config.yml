@@ -18,7 +18,7 @@ test_size: 0.20
 random_state: 42
 
 # Set the batch size
-batch_size: 128
+batch_size: 32
 
 color_mode: 'rgb'
 class_mode: 'categorical'
@@ -37,7 +37,7 @@ beta_1: 0.9
 beta_2: 0.999
 loss: "categorical_crossentropy"
 metrics: ("accuracy",'precision','recall')
-epochs:  2
+epochs:  1
 
 # Alogrithm parameters
 n_estimators: 100

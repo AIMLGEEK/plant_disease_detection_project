@@ -109,6 +109,7 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
         self.resnet_weight = resnet_weight
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = None
+        self.history = None
 
     def _build_mobilenet(self):
         base_model = tf.keras.applications.MobileNetV2(
@@ -209,13 +210,15 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
             )
         ]
 
-        self.model.fit(
+        history = self.model.fit(
             train_dataset,
             epochs=config.self_model_config.epochs,
             validation_data=valid_dataset,
             callbacks=callbacks
         )
 
+        # Store the history
+        self.history = history.history
         return self
 
     def transform(self, X):
@@ -230,6 +233,8 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
         instance.model = tf.keras.models.load_model(filepath / 'final_model')
         return instance
 
+    def get_training_history(self):
+        return self.history
 
 class ClassNameSaver(BaseEstimator, TransformerMixin):
     """Saves class names from the dataset."""
