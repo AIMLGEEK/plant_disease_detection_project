@@ -11,16 +11,15 @@ from typing import Dict, List
 from pydantic import BaseModel
 from strictyaml import YAML, load
 
-import plant_disease_detection_model
-
 # Project Directories
-PACKAGE_ROOT = Path(plant_disease_detection_model.__file__).resolve().parent
-ROOT = PACKAGE_ROOT.parent
-CONFIG_FILE_PATH = PACKAGE_ROOT / "config.yml"
+#PACKAGE_ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent
+ROOT = ROOT.parent
+CONFIG_FILE_PATH = ROOT / "config.yml"
 #print(CONFIG_FILE_PATH)
 
-DATASET_DIR = PACKAGE_ROOT / "datasets"
-TRAINED_MODEL_DIR = PACKAGE_ROOT / "trained_models"
+DATASET_DIR = ROOT / "datasets"
+TRAINED_MODEL_DIR = ROOT / "trained_models"
 
 
 class AppConfig(BaseModel):
@@ -57,7 +56,8 @@ class Config(BaseModel):
 
 def find_config_file() -> Path:
     """Locate the configuration file."""
-    
+    print(CONFIG_FILE_PATH)
+    print(ROOT)
     if CONFIG_FILE_PATH.is_file():
         return CONFIG_FILE_PATH
     
@@ -79,6 +79,8 @@ def fetch_config_from_yaml(cfg_path: Path = None) -> YAML:
 
 
 def create_and_validate_config(parsed_config: YAML = None) -> Config:
+    print(CONFIG_FILE_PATH)
+    print(ROOT)
     """Run validation on config values."""
     if parsed_config is None:
         parsed_config = fetch_config_from_yaml()

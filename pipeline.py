@@ -1,8 +1,9 @@
 import pickle
+import os
 
 from keras.src.utils import image_dataset_from_directory
 from sklearn.pipeline import Pipeline
-from plant_disease_detection_model.config.core import config, DATASET_DIR
+from config.core import config, DATASET_DIR
 from pathlib import Path
 
 from sklearn.pipeline import Pipeline
@@ -39,8 +40,10 @@ class DataLoader(BaseEstimator, TransformerMixin):
             tf.keras.layers.RandomContrast(0.2),
             tf.keras.layers.RandomBrightness(0.2)
         ])
+        
 
     def fit(self, X, y=None):
+        self._create_model_directories()
         return self
 
     def transform(self, X):
@@ -55,6 +58,19 @@ class DataLoader(BaseEstimator, TransformerMixin):
 
         return train_dataset, valid_dataset
 
+    def _create_model_directories(self):
+        """
+        Creates a directory named "models" and a subdirectory named "saved_model" within it.
+
+        Raises:
+            FileExistsError: If the "models" directory already exists.
+        """
+        try:
+            os.makedirs("models/saved_model")
+            print("Directories created successfully.")
+        except FileExistsError:
+            print("Directories already exist.")
+    
     def _create_dataset(self, path: Path, is_training: bool) -> tf.data.Dataset:
         dataset = tf.keras.utils.image_dataset_from_directory(
             str(path),
@@ -100,13 +116,13 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
             num_classes: int,
             learning_rate: float = 0.001,
             mobilenet_weight: float = 0.5,
-            resnet_weight: float = 0.5
+            #resnet_weight: float = 0.5
     ):
         self.input_shape = input_shape
         self.num_classes = num_classes
         self.learning_rate = learning_rate
         self.mobilenet_weight = mobilenet_weight
-        self.resnet_weight = resnet_weight
+        #self.resnet_weight = resnet_weight
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = None
         self.history = None

@@ -12,7 +12,7 @@ import pandas as pd
 from sklearn.pipeline import Pipeline
 
 from plant_disease_detection_model import __version__ as _version
-from plant_disease_detection_model.config.core import DATASET_DIR, TRAINED_MODEL_DIR, config
+from config.core import DATASET_DIR, TRAINED_MODEL_DIR, config
 
 import tensorflow as tf
 

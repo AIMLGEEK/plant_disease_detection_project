@@ -3,7 +3,7 @@ import shutil
 import numpy as np
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
-from plant_disease_detection_model.config.core import config
+from config.core import config
 
 def create_dir(dir_path):
     """Create a directory if it doesn't exist."""

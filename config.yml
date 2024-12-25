@@ -24,7 +24,7 @@ color_mode: 'rgb'
 class_mode: 'categorical'
 size: 224
 input_shape :  (224, 224, 3)
-num_classes: 3
+num_classes: 2
 
 # Activation functions
 dense_activation: 'relu'
@@ -37,7 +37,7 @@ beta_1: 0.9
 beta_2: 0.999
 loss: "categorical_crossentropy"
 metrics: ("accuracy",'precision','recall')
-epochs:  10
+epochs:  1
 
 # Alogrithm parameters
 n_estimators: 100

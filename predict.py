@@ -3,8 +3,8 @@ import json
 import numpy as np
 import tensorflow as tf
 from pathlib import Path
-from plant_disease_detection_model.config.core import config, DATASET_DIR
-from plant_disease_detection_model.pipeline import DataLoader, EnsembleModel, ClassNameSaver  # Add this import
+from config.core import config, DATASET_DIR
+from pipeline import DataLoader, EnsembleModel, ClassNameSaver  # Add this import
 import logging
 
 logger = logging.getLogger(__name__)
@@ -101,7 +101,7 @@ def make_prediction(model_path: Path, img_path: Path) -> dict:
 if __name__ == "__main__":
     # Set up paths
     model_path = Path('models/saved_model')
-    img_path = Path('D:/AppleCedarRust1.JPG')  # Update with your image path
+    img_path = DATASET_DIR/"augmented_data/train/Apple___Apple_scab/0a5e9323-dbad-432d-ac58-d291718345d9___FREC_Scab 3417_90deg.JPG"  # Update with your image path
 
     try:
         # Make prediction

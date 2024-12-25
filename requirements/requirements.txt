@@ -3,3 +3,5 @@ pandas
 tensorflow
 pydantic
 strictyaml
+scikit-learn
+Pillow

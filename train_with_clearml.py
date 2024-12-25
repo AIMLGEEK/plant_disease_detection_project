@@ -7,8 +7,8 @@ import os
 import pickle
 import logging
 import tensorflow as tf
-from plant_disease_detection_model.pipeline import create_pipeline
-from plant_disease_detection_model.config.core import config, DATASET_DIR
+from pipeline import create_pipeline
+from config.core import config, DATASET_DIR
 from model_version import ModelVersioning
 
 # Configure logging
