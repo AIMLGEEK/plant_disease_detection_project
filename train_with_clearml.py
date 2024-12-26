@@ -156,8 +156,8 @@ def train_model():
     model_dir = create_model_directories()
     # Create ClearML task
     task = Task.init(
-        project_name="Plant Disease Detection",
-        task_name="Model Training",
+        project_name="plant_disease_detection_project",
+        task_name="MobilenetV2_training",
         auto_connect_frameworks={'tensorflow': False}
     )
     logger.info("Created ClearML task")
@@ -168,20 +168,6 @@ def train_model():
     # Setup training configuration
     img_size = (config.app_config.size, config.app_config.size)
     input_shape = img_size + (3,)
-    dataset_path = Path(DATASET_DIR) / 'new-plant-diseases-dataset'
-
-    logger.info(f"Using dataset path: {dataset_path}")
-    verify_dataset(dataset_path)
-
-    train_config = {
-        'input_shape': input_shape,
-        'batch_size': config.self_model_config.batch_size,
-        'num_classes': config.self_model_config.num_classes,
-        'learning_rate': config.self_model_config.learning_rate,
-        'augment': True,
-        'model_dir': Path('models/saved_model'),
-        'dataset_directory': dataset_path
-    }
 
     # Log configuration
     task.connect_configuration(
@@ -191,22 +177,29 @@ def train_model():
 
     try:
         # Create ClearML dataset
-        dataset = Dataset.create(
-            dataset_project="Plant Disease Detection",
-            dataset_name="Plant Disease Dataset",
-            dataset_tags=["plant-diseases"]
+        dataset = Dataset.get(
+            dataset_project="plant_disease_detection_project",
+            dataset_name="plant_disease_detection_dataset"
         )
-        dataset.add_files(dataset_path)
-        dataset.upload(output_url="datasets/clearml-my-datasets")
-        dataset.finalize()
-        logger.info("Dataset uploaded to ClearML")
 
         # Get local copy of dataset
         local_dataset_path = Path(dataset.get_local_copy())
         logger.info(f"Retrieved local dataset copy at: {local_dataset_path}")
 
+        verify_dataset(dataset_path=local_dataset_path)
+
         # Create and train pipeline
         logger.info("Creating and training pipeline...")
+
+        train_config = {
+            'input_shape': input_shape,
+            'batch_size': config.self_model_config.batch_size,
+            'num_classes': config.self_model_config.num_classes,
+            'learning_rate': config.self_model_config.learning_rate,
+            'augment': True,
+            'model_dir': Path('models/saved_model'),
+            'dataset_directory': local_dataset_path
+        }
         pipeline = create_pipeline(train_config)
         history = pipeline.fit((local_dataset_path, local_dataset_path))
 
