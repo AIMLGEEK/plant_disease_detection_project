@@ -5,3 +5,4 @@ pydantic
 strictyaml
 scikit-learn
 Pillow
+clearml
