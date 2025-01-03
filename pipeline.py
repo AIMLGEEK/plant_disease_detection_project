@@ -113,13 +113,11 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
     def __init__(
             self,
             input_shape: Tuple[int, int, int],
-            num_classes: int,
             learning_rate: float = 0.001,
             mobilenet_weight: float = 0.5,
             #resnet_weight: float = 0.5
     ):
         self.input_shape = input_shape
-        self.num_classes = num_classes
         self.learning_rate = learning_rate
         self.mobilenet_weight = mobilenet_weight
         #self.resnet_weight = resnet_weight
@@ -259,6 +257,7 @@ class ClassNameSaver(BaseEstimator, TransformerMixin):
         self.dataset_directory = dataset_directory
         self.save_path = save_path
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.num_classes = None
 
     def fit(self, X, y=None):
         dataset, _ = X
@@ -272,6 +271,7 @@ class ClassNameSaver(BaseEstimator, TransformerMixin):
         )
 
         class_names = dataset.class_names
+        self.num_classes = len(class_names)
 
         self.logger.info(f"Saving {len(class_names)} class names")
         with open(self.save_path / 'class_names.json', 'w') as f:
@@ -280,7 +280,7 @@ class ClassNameSaver(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        return X
+        return X, self.num_classes
 
 
 def create_pipeline(config: dict) -> Pipeline:
@@ -297,7 +297,6 @@ def create_pipeline(config: dict) -> Pipeline:
         )),
         ('model', EnsembleModel(
             input_shape=config['input_shape'],
-            num_classes=config['num_classes'],
             learning_rate=config['learning_rate']
         ))
     ])
@@ -305,14 +304,12 @@ def create_pipeline(config: dict) -> Pipeline:
 def train_model():
     img_size = (config.app_config.size, config.app_config.size)
     batch_size = config.self_model_config.batch_size
-    num_classes = config.self_model_config.num_classes
     learning_rate = config.self_model_config.learning_rate
     dataset_directory = Path(DATASET_DIR / config.app_config.training_data_folder)
     input_shape = img_size + (3,)
     train_config = {
         'input_shape': input_shape,
         'batch_size': batch_size,
-        'num_classes': num_classes,
         'learning_rate': learning_rate,
         'augment': True,
         'model_dir': Path('models/saved_model'),

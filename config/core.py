@@ -39,7 +39,6 @@ class ModelConfig(BaseModel):
     random_state: int
     n_estimators: int
     max_depth: int
-    num_classes: int
     batch_size: int
     epochs: int
     learning_rate: float

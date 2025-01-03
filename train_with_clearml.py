@@ -194,7 +194,6 @@ def train_model():
         train_config = {
             'input_shape': input_shape,
             'batch_size': config.self_model_config.batch_size,
-            'num_classes': config.self_model_config.num_classes,
             'learning_rate': config.self_model_config.learning_rate,
             'augment': True,
             'model_dir': Path('models/saved_model'),
