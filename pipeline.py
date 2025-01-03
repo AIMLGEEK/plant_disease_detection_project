@@ -116,6 +116,7 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
             learning_rate: float = 0.001,
             mobilenet_weight: float = 0.5,
             #resnet_weight: float = 0.5
+            num_classes: Optional[int] = None
     ):
         self.input_shape = input_shape
         self.learning_rate = learning_rate
@@ -124,6 +125,7 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = None
         self.history = None
+        self.num_classes = num_classes
 
     def _build_mobilenet(self):
         base_model = tf.keras.applications.MobileNetV2(
@@ -174,7 +176,8 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
         if not isinstance(X, tuple) or len(X) != 2:
             raise ValueError("Expected tuple of (train_dataset, valid_dataset)")
 
-        train_dataset, valid_dataset = X
+        (train_dataset, valid_dataset), num_classes = X
+        self.num_classes = num_classes
         self.logger.info("Building ensemble model")
 
         # Build models
