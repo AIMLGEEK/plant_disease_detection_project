@@ -1,0 +1,33 @@
+name: Retrain Model
+
+on:
+  workflow_dispatch:
+    inputs:
+      dataset_name:
+        description: "Name of the dataset"
+        required: true
+      project_name:
+        description: "Project name"
+        required: true
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Train Model
+      run: |
+        python train_with_clearml.py --dataset ${{ inputs.dataset_name }} --project ${{ inputs.project_name }}
