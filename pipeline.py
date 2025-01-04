@@ -96,7 +96,7 @@ class DataLoader(BaseEstimator, TransformerMixin):
             dataset = dataset.cache()
 
         if is_training:
-            dataset = dataset.shuffle(300)
+            dataset = dataset.shuffle(100)
 
         return dataset.prefetch(tf.data.AUTOTUNE)
 
