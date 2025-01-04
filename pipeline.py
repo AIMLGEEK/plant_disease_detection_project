@@ -37,8 +37,6 @@ class DataLoader(BaseEstimator, TransformerMixin):
             tf.keras.layers.RandomFlip("horizontal_and_vertical"),
             tf.keras.layers.RandomRotation(0.2),
             tf.keras.layers.RandomZoom(0.1),
-            tf.keras.layers.RandomContrast(0.2),
-            tf.keras.layers.RandomBrightness(0.2)
         ])
         
 
@@ -267,7 +265,7 @@ class ClassNameSaver(BaseEstimator, TransformerMixin):
             self.dataset_directory,
             label_mode='categorical',
             image_size=(config.app_config.size, config.app_config.size),
-            batch_size=32
+            batch_size=16
         )
 
         class_names = dataset.class_names
