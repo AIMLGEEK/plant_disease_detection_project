@@ -141,9 +141,6 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
         x = tf.keras.layers.Dense(256, activation='relu')(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tf.keras.layers.Dropout(0.3)(x)
-        x = tf.keras.layers.Dense(64, activation='relu')(x)
-        x = tf.keras.layers.BatchNormalization()(x)
-        x = tf.keras.layers.Dropout(0.3)(x)
         outputs = tf.keras.layers.Dense(self.num_classes, activation='softmax')(x)
 
         return tf.keras.Model(inputs, outputs)
