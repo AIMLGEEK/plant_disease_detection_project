@@ -172,9 +172,6 @@ def train_model():
     version = versioning.get_next_version()
     logger.info(f"Using model version: {version}")
 
-    # Log the version
-    task.set_tags(version)
-
     # Setup training configuration
     img_size = (config.app_config.size, config.app_config.size)
     input_shape = img_size + (3,)
