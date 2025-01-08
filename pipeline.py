@@ -37,8 +37,6 @@ class DataLoader(BaseEstimator, TransformerMixin):
             tf.keras.layers.RandomFlip("horizontal_and_vertical"),
             tf.keras.layers.RandomRotation(0.2),
             tf.keras.layers.RandomZoom(0.1),
-            tf.keras.layers.RandomContrast(0.2),
-            tf.keras.layers.RandomBrightness(0.2)
         ])
         
 
@@ -96,7 +94,7 @@ class DataLoader(BaseEstimator, TransformerMixin):
             dataset = dataset.cache()
 
         if is_training:
-            dataset = dataset.shuffle(1000)
+            dataset = dataset.shuffle(100)
 
         return dataset.prefetch(tf.data.AUTOTUNE)
 
@@ -113,19 +111,19 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
     def __init__(
             self,
             input_shape: Tuple[int, int, int],
-            num_classes: int,
             learning_rate: float = 0.001,
             mobilenet_weight: float = 0.5,
             #resnet_weight: float = 0.5
+            num_classes: Optional[int] = None
     ):
         self.input_shape = input_shape
-        self.num_classes = num_classes
         self.learning_rate = learning_rate
         self.mobilenet_weight = mobilenet_weight
         #self.resnet_weight = resnet_weight
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = None
         self.history = None
+        self.num_classes = num_classes
 
     def _build_mobilenet(self):
         base_model = tf.keras.applications.MobileNetV2(
@@ -148,35 +146,13 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
 
         return tf.keras.Model(inputs, outputs)
 
-    # def _build_resnet(self):
-    #     base_model = tf.keras.applications.ResNet50(
-    #         input_shape=self.input_shape,
-    #         include_top=False,
-    #         weights='imagenet'
-    #     )
-    #
-    #     # Unfreeze last few layers
-    #     for layer in base_model.layers[:-10]:
-    #         layer.trainable = False
-    #
-    #     inputs = tf.keras.Input(shape=self.input_shape)
-    #     x = base_model(inputs)
-    #     x = tf.keras.layers.GlobalAveragePooling2D()(x)
-    #     x = tf.keras.layers.Dense(256, activation='relu')(x)
-    #     x = tf.keras.layers.BatchNormalization()(x)
-    #     x = tf.keras.layers.Dropout(0.3)(x)
-    #     x = tf.keras.layers.Dense(64, activation='relu')(x)
-    #     x = tf.keras.layers.BatchNormalization()(x)
-    #     x = tf.keras.layers.Dropout(0.3)(x)
-    #     outputs = tf.keras.layers.Dense(self.num_classes, activation='softmax')(x)
-    #
-    #     return tf.keras.Model(inputs, outputs)
 
     def fit(self, X, y=None):
         if not isinstance(X, tuple) or len(X) != 2:
             raise ValueError("Expected tuple of (train_dataset, valid_dataset)")
 
-        train_dataset, valid_dataset = X
+        (train_dataset, valid_dataset), num_classes = X
+        self.num_classes = num_classes
         self.logger.info("Building ensemble model")
 
         # Build models
@@ -259,6 +235,7 @@ class ClassNameSaver(BaseEstimator, TransformerMixin):
         self.dataset_directory = dataset_directory
         self.save_path = save_path
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.num_classes = None
 
     def fit(self, X, y=None):
         dataset, _ = X
@@ -268,10 +245,11 @@ class ClassNameSaver(BaseEstimator, TransformerMixin):
             self.dataset_directory,
             label_mode='categorical',
             image_size=(config.app_config.size, config.app_config.size),
-            batch_size=32
+            batch_size=16
         )
 
         class_names = dataset.class_names
+        self.num_classes = len(class_names)
 
         self.logger.info(f"Saving {len(class_names)} class names")
         with open(self.save_path / 'class_names.json', 'w') as f:
@@ -280,7 +258,7 @@ class ClassNameSaver(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        return X
+        return X, self.num_classes
 
 
 def create_pipeline(config: dict) -> Pipeline:
@@ -297,37 +275,10 @@ def create_pipeline(config: dict) -> Pipeline:
         )),
         ('model', EnsembleModel(
             input_shape=config['input_shape'],
-            num_classes=config['num_classes'],
             learning_rate=config['learning_rate']
         ))
     ])
 
-def train_model():
-    img_size = (config.app_config.size, config.app_config.size)
-    batch_size = config.self_model_config.batch_size
-    num_classes = config.self_model_config.num_classes
-    learning_rate = config.self_model_config.learning_rate
-    dataset_directory = Path(DATASET_DIR / config.app_config.training_data_folder)
-    input_shape = img_size + (3,)
-    train_config = {
-        'input_shape': input_shape,
-        'batch_size': batch_size,
-        'num_classes': num_classes,
-        'learning_rate': learning_rate,
-        'augment': True,
-        'model_dir': Path('models/saved_model'),
-        'dataset_directory': dataset_directory
-    }
-
-    train_dir = Path(DATASET_DIR / 'augmented_data/train')
-    valid_dir = Path(DATASET_DIR / 'augmented_data/valid')
-
-    pipeline = create_pipeline(train_config)
-    pipeline.fit((train_dir, valid_dir))
-
     # Save the pipeline
     with open('models/saved_model/model_pipeline.pkl', 'wb') as f:
         pickle.dump(pipeline, f)
-
-if __name__ == "__main__":
-    train_model()

@@ -194,14 +194,13 @@ def train_model():
         train_config = {
             'input_shape': input_shape,
             'batch_size': config.self_model_config.batch_size,
-            'num_classes': config.self_model_config.num_classes,
             'learning_rate': config.self_model_config.learning_rate,
             'augment': True,
             'model_dir': Path('models/saved_model'),
-            'dataset_directory': local_dataset_path
+            'dataset_directory': local_dataset_path/'train'
         }
         pipeline = create_pipeline(train_config)
-        history = pipeline.fit((local_dataset_path, local_dataset_path))
+        history = pipeline.fit((local_dataset_path/'train', local_dataset_path/'valid'))
 
         # Get training history from the model step
         history = pipeline.named_steps['model'].get_training_history()
@@ -257,6 +256,10 @@ def train_model():
             name=f"pipeline_v{version}",
             artifact_object=pipeline_save_path,
         )
+
+        task.upload_artifact(
+            name=f"class_names_v{version}",
+            artifact_object=model_dir / 'class_names.json')
 
         # Upload metadata
         task.upload_artifact(
