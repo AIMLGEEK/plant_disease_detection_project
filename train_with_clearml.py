@@ -163,7 +163,17 @@ def train_model():
     logger.info("Created ClearML task")
 
     # Initialize model versioning
-    versioning = ModelVersioning()
+    versioning = ModelVersioning(
+        project_name="plant_disease_detection_project",
+        model_name="MobilenetV2"
+    )
+
+    # Get the next model version
+    version = versioning.get_next_version()
+    logger.info(f"Using model version: {version}")
+
+    # Log the version
+    task.set_tag(version)
 
     # Setup training configuration
     img_size = (config.app_config.size, config.app_config.size)
@@ -211,8 +221,6 @@ def train_model():
             'val_loss': float(history['val_loss'][-1]),
             'val_accuracy': float(history['val_accuracy'][-1])
         }
-        version = versioning.update_version(training_metrics)
-        logger.info(f"Updated model version to {version}")
 
         # Save model and artifacts locally first
         model_dir = Path('models/saved_model')
@@ -265,12 +273,6 @@ def train_model():
         task.upload_artifact(
             name="metadata",
             artifact_object=metadata
-        )
-
-        # Upload version info
-        task.upload_artifact(
-            name="version_info",
-            artifact_object=versioning.version_info
         )
 
         logger.info(f"Model training completed successfully with version {version}")
