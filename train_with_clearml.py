@@ -173,7 +173,7 @@ def train_model():
     logger.info(f"Using model version: {version}")
 
     # Log the version
-    task.set_tag(version)
+    task.set_tags(version)
 
     # Setup training configuration
     img_size = (config.app_config.size, config.app_config.size)
