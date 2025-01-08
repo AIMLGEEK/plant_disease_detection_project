@@ -139,33 +139,13 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
         x = tf.keras.layers.Dense(256, activation='relu')(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tf.keras.layers.Dropout(0.3)(x)
+        x = tf.keras.layers.Dense(64, activation='relu')(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.Dropout(0.3)(x)
         outputs = tf.keras.layers.Dense(self.num_classes, activation='softmax')(x)
 
         return tf.keras.Model(inputs, outputs)
 
-    # def _build_resnet(self):
-    #     base_model = tf.keras.applications.ResNet50(
-    #         input_shape=self.input_shape,
-    #         include_top=False,
-    #         weights='imagenet'
-    #     )
-    #
-    #     # Unfreeze last few layers
-    #     for layer in base_model.layers[:-10]:
-    #         layer.trainable = False
-    #
-    #     inputs = tf.keras.Input(shape=self.input_shape)
-    #     x = base_model(inputs)
-    #     x = tf.keras.layers.GlobalAveragePooling2D()(x)
-    #     x = tf.keras.layers.Dense(256, activation='relu')(x)
-    #     x = tf.keras.layers.BatchNormalization()(x)
-    #     x = tf.keras.layers.Dropout(0.3)(x)
-    #     x = tf.keras.layers.Dense(64, activation='relu')(x)
-    #     x = tf.keras.layers.BatchNormalization()(x)
-    #     x = tf.keras.layers.Dropout(0.3)(x)
-    #     outputs = tf.keras.layers.Dense(self.num_classes, activation='softmax')(x)
-    #
-    #     return tf.keras.Model(inputs, outputs)
 
     def fit(self, X, y=None):
         if not isinstance(X, tuple) or len(X) != 2:
@@ -299,30 +279,6 @@ def create_pipeline(config: dict) -> Pipeline:
         ))
     ])
 
-def train_model():
-    img_size = (config.app_config.size, config.app_config.size)
-    batch_size = config.self_model_config.batch_size
-    learning_rate = config.self_model_config.learning_rate
-    dataset_directory = Path(DATASET_DIR / config.app_config.training_data_folder)
-    input_shape = img_size + (3,)
-    train_config = {
-        'input_shape': input_shape,
-        'batch_size': batch_size,
-        'learning_rate': learning_rate,
-        'augment': True,
-        'model_dir': Path('models/saved_model'),
-        'dataset_directory': dataset_directory
-    }
-
-    train_dir = Path(DATASET_DIR / 'augmented_data/train')
-    valid_dir = Path(DATASET_DIR / 'augmented_data/valid')
-
-    pipeline = create_pipeline(train_config)
-    pipeline.fit((train_dir, valid_dir))
-
     # Save the pipeline
     with open('models/saved_model/model_pipeline.pkl', 'wb') as f:
         pickle.dump(pipeline, f)
-
-if __name__ == "__main__":
-    train_model()
