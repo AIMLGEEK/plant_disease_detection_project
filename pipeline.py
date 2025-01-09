@@ -5,6 +5,7 @@ from keras.src.utils import image_dataset_from_directory
 from sklearn.pipeline import Pipeline
 from config.core import config, DATASET_DIR
 from pathlib import Path
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 from sklearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -38,7 +39,6 @@ class DataLoader(BaseEstimator, TransformerMixin):
             tf.keras.layers.RandomRotation(0.2),
             tf.keras.layers.RandomZoom(0.1),
         ])
-        
 
     def fit(self, X, y=None):
         self._create_model_directories()
@@ -51,10 +51,10 @@ class DataLoader(BaseEstimator, TransformerMixin):
         train_path, valid_path = X
         self.logger.info(f"Loading datasets from: {train_path} and {valid_path}")
 
-        train_dataset = self._create_dataset(train_path, is_training=True)
-        valid_dataset = self._create_dataset(valid_path, is_training=False)
+        train_generator = self._create_dataset(train_path, is_training=True)
+        valid_generator = self._create_dataset(valid_path, is_training=False)
 
-        return train_dataset, valid_dataset
+        return train_generator, valid_generator
 
     def _create_model_directories(self):
         """
@@ -68,35 +68,30 @@ class DataLoader(BaseEstimator, TransformerMixin):
             print("Directories created successfully.")
         except FileExistsError:
             print("Directories already exist.")
-    
-    def _create_dataset(self, path: Path, is_training: bool) -> tf.data.Dataset:
-        dataset = tf.keras.utils.image_dataset_from_directory(
-            str(path),
-            image_size=self.input_shape[:2],
+
+    def _create_dataset(self, path: Path, is_training: bool):
+        if is_training:
+            datagen = ImageDataGenerator(
+                rescale=1.0 / 255,
+                rotation_range=20,
+                width_shift_range=0.2,
+                height_shift_range=0.2,
+                shear_range=0.2,
+                zoom_range=0.2,
+                horizontal_flip=True,
+                fill_mode='nearest'
+            )
+        else:
+            datagen = ImageDataGenerator(rescale=1.0 / 255)
+
+        generator = datagen.flow_from_directory(
+            directory=str(path),
+            target_size=self.input_shape[:2],
             batch_size=self.batch_size,
-            label_mode=self.label_mode,
+            class_mode='categorical',
             shuffle=is_training
         )
-
-        # Performance optimizations
-        dataset = dataset.map(
-            self._preprocess,
-            num_parallel_calls=tf.data.AUTOTUNE
-        )
-
-        if is_training and self.augment:
-            dataset = dataset.map(
-                self._augment,
-                num_parallel_calls=tf.data.AUTOTUNE
-            )
-
-        if self.cache:
-            dataset = dataset.cache()
-
-        if is_training:
-            dataset = dataset.shuffle(100)
-
-        return dataset.prefetch(tf.data.AUTOTUNE)
+        return generator
 
     def _preprocess(self, images, labels):
         return tf.cast(images, tf.float32) / 255.0, labels
@@ -113,13 +108,13 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
             input_shape: Tuple[int, int, int],
             learning_rate: float = 0.001,
             mobilenet_weight: float = 0.5,
-            #resnet_weight: float = 0.5
+            # resnet_weight: float = 0.5
             num_classes: Optional[int] = None
     ):
         self.input_shape = input_shape
         self.learning_rate = learning_rate
         self.mobilenet_weight = mobilenet_weight
-        #self.resnet_weight = resnet_weight
+        # self.resnet_weight = resnet_weight
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = None
         self.history = None
@@ -146,7 +141,6 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
 
         return tf.keras.Model(inputs, outputs)
 
-
     def fit(self, X, y=None):
         if not isinstance(X, tuple) or len(X) != 2:
             raise ValueError("Expected tuple of (train_dataset, valid_dataset)")
@@ -157,17 +151,17 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
 
         # Build models
         mobilenet = self._build_mobilenet()
-        #resnet = self._build_resnet()
+        # resnet = self._build_resnet()
 
         # Create ensemble
         inputs = tf.keras.Input(shape=self.input_shape)
         mobilenet_output = mobilenet(inputs)
-        #resnet_output = resnet(inputs)
+        # resnet_output = resnet(inputs)
 
-        #ensemble_output = tf.keras.layers.Average()(
+        # ensemble_output = tf.keras.layers.Average()(
         #    [self.mobilenet_weight * mobilenet_output,
         #     self.resnet_weight * resnet_output]
-        #)
+        # )
 
         self.model = tf.keras.Model(inputs, mobilenet_output)
 
@@ -203,10 +197,12 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
         ]
 
         history = self.model.fit(
-            train_dataset,
+            train_dataset,  # This is now a generator
             epochs=config.self_model_config.epochs,
-            validation_data=valid_dataset,
-            callbacks=callbacks
+            validation_data=valid_dataset,  # This is also a generator
+            callbacks=callbacks,
+            steps_per_epoch=train_dataset.samples // train_dataset.batch_size,
+            validation_steps=valid_dataset.samples // valid_dataset.batch_size
         )
 
         # Store the history
@@ -227,6 +223,7 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
 
     def get_training_history(self):
         return self.history
+
 
 class ClassNameSaver(BaseEstimator, TransformerMixin):
     """Saves class names from the dataset."""
@@ -270,7 +267,7 @@ def create_pipeline(config: dict) -> Pipeline:
             augment=config['augment']
         )),
         ('class_names', ClassNameSaver(
-            dataset_directory = config['dataset_directory'],
+            dataset_directory=config['dataset_directory'],
             save_path=Path(config['model_dir'])
         )),
         ('model', EnsembleModel(
